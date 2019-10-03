@@ -133,7 +133,7 @@ class OOAnalyzerJsonStrings:
     def Size(self): return "size"
 
     @property
-    def Imported(self): return "imported"
+    def Imported(self): return "import"
 
     @property
     def DemangledName(self): return "demangledname"
@@ -145,7 +145,7 @@ class OOAnalyzerJsonStrings:
     def Vfptr(self): return "vfptr"
 
     @property
-    def Vftables(self): return "vftables"
+    def Vftables(self): return "Vftables"
 
     @property
     def EA(self): return "ea"
@@ -172,10 +172,10 @@ class OOAnalyzerJsonStrings:
     def Parent(self): return "parent"
 
     @property
-    def Members(self): return "members"
+    def Members(self): return "Members"
 
     @property
-    def Methods(self): return "methods"
+    def Methods(self): return "Methods"
 
 OOAJson = OOAnalyzerJsonStrings()
 
@@ -280,9 +280,10 @@ class PyOOAnalyzer(object):
             print "JSON parsing error: %s" % e
             return [False, "JSON parsing error: %s" % e]
 
-        if "types" in data:
+        if "Structures" in data:
+
             print "Parsing JSON structures ..."
-            self.__parse_structs(data[OOAJson.Types])
+            self.__parse_structs(data["Structures"])
             print "Completed Parsing JSON structures file: %s classes found" % len(self.__classes)
 
         if "Usages" in data:
@@ -350,7 +351,7 @@ class PyOOAnalyzer(object):
         for s in structs:
             # Now fill out the structures
             for c in self.__classes:
-                if c.name == s[OOAJson.Name]:
+                if c.name == s['Name']:
 
                     cid = idc.GetStrucIdByName(c.ida_name)
                     if cid != idc.BADADDR: c.id = cid
@@ -546,8 +547,8 @@ class PyOOAnalyzer(object):
             if 'Vcalls' in u:
                 self.__parse_vf_calls(u['Vcalls'])
 
-            if 'Members' in u:
-                self.__parse_member_usages(u['Members'])
+            if OOAJson.Members in u:
+                self.__parse_member_usages(u[OOAJson.Members])
 
         return
 
@@ -1441,11 +1442,11 @@ class PyClassStructure(object):
 
         self.__applied = False
 
-        self.__size = int(struc_def['size'], 10)
+        self.__size = int(struc_def['Size'], 10)
 
-        self.__demangled_name = struc_def['demangledname']
+        self.__demangled_name = struc_def['DemangledName']
 
-        self.__name = struc_def['name']
+        self.__name = struc_def['Name']
 
         # set the IDA name
         self.__ida_name = sanitize_name(self.__name)
