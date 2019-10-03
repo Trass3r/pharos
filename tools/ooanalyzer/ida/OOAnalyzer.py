@@ -1032,7 +1032,8 @@ class PyOOAnalyzer(object):
 
         method_name = method.demangled_name if method.demangled_name is not None else method.method_name
 
-        cmt = cmt = "%s::%s" % (method.cls.ida_name, method_name)
+        fullname = "%s::%s" % (method.cls.ida_name, method_name)
+        cmt = fullname
 
         if method.is_virtual == True:
             cmt = "virtual %s" % cmt
@@ -1047,13 +1048,13 @@ class PyOOAnalyzer(object):
         is_func = idafunc is not None and idafunc.start_ea == method.start_ea
         if is_func:
             # Check for existing name
-            if idc.get_name_ea_simple(method_name) != idaapi.BADADDR:
-                method_name += "_%x" % method.start_ea
+            if idc.get_name_ea_simple(fullname) != idaapi.BADADDR:
+                fullname += "_%x" % method.start_ea
 
             print("Renaming %s to %s" %
-                  (idc.get_func_name(method.start_ea), method_name))
+                  (idc.get_func_name(method.start_ea), fullname))
 
-            idc.set_name(method.start_ea, method_name,
+            idc.set_name(method.start_ea, fullname,
                          ida_name.SN_NOCHECK | ida_name.SN_FORCE)
         else:
             #print("Not renaming the function at %#x %s because it is not a function in IDA!" % (
