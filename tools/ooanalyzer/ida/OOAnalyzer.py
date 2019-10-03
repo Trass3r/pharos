@@ -1056,8 +1056,11 @@ class PyOOAnalyzer(object):
             idc.set_name(method.start_ea, method_name,
                          ida_name.SN_NOCHECK | ida_name.SN_FORCE)
         else:
-            print("Not renaming the function at %#x %s because it is not a function in IDA!" % (
-                method.start_ea, method_name))
+            #print("Not renaming the function at %#x %s because it is not a function in IDA!" % (
+            #    method.start_ea, method_name))
+            print("Have to define function first")
+            idc.create_insn(method.start_ea)
+            ida_funcs.add_func(method.start_ea)
 
         idc.set_func_cmt(method.start_ea, cmt, 1)
 
