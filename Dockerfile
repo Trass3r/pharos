@@ -15,3 +15,11 @@ ADD . /root/pharos
 # Put everything in the same layer so it's much smaller
 RUN /root/pharos/scripts/build.bash -reclaim && \
   find /usr/local/lib /usr/local/bin | xargs file | grep 'current ar archive' | awk -F':' '{print $1}' | xargs strip
+
+#FROM ubuntu:rolling
+
+#RUN apt-get -y update \
+#&&  apt-get -y install libsqlite3-0 'libyaml-cpp[^-]' 'libboost.*67.0' libxml2 \
+#&&  rm -rf /var/lib/apt/lists/*
+
+#COPY --from=buildenv /usr/local/ /usr/local/
