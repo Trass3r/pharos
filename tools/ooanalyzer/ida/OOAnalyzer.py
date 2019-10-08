@@ -125,8 +125,8 @@ def generate_vftable_name(classes, vft, cls, off):
 
     vft_name = "_".join(str(y) for y in vft_parts)
 
-    print("Vritual function table name %s_vftable" % vft_name)
-    return "%s_vftable" % vft_name
+    print("Virtual function table name %s_vtbl" % vft_name)
+    return "%s_vtbl" % vft_name
 
 # The code below was taken from:
 # 
@@ -1171,7 +1171,7 @@ class PyOOAnalyzer(object):
             idc.set_member_cmt(vftid, vt_off, ida_hexify(ea), 1)
 
         # add the vftptr :or rename existing member to vftptr
-        vptr_name = "vftptr_0x%s" % ida_hexify(off)
+        vptr_name = '__vftable' if off == 0 else "__vftable_%s" % ida_hexify(off)
 
         if idc.get_member_name(cls.id, off) == None:
             # there is no member at this offset
