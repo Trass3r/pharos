@@ -106,8 +106,8 @@ def generate_vftable_name(classes, vft, cls, off):
 
    vft_name = "_".join(str(y) for y in vft_parts)
 
-   print "Vritual function table name %s_vftable" % vft_name
-   return  "%s_vftable" % vft_name
+   print "Virtual function table name %s_vtbl" % vft_name
+   return  "%s_vtbl" % vft_name
 
 class PyOOAnalyzer(object):
    '''
@@ -344,7 +344,7 @@ class PyOOAnalyzer(object):
          else:
             mem.class_member = None
             if mem.is_vfptr:
-               mem.member_name = "vfptr_%x" % offset
+               mem.member_name = '__vftable' if offset == 0 else "__vftable_%x" % offset
             else:
                mem.member_name = "mbr_%x" % offset
             print "   - Found member '%s' @ offset 0x%x" % (mem.member_name, offset)
@@ -719,7 +719,7 @@ class PyOOAnalyzer(object):
 
 
       # add the vfptr :or rename existing member to vfptr
-      vptr_name = "vfptr_%s" % ida_hexify(off)
+      vptr_name = '__vftable' if off == 0 else "__vftable_%s" % ida_hexify(off)
 
       if idc.GetMemberName(cid,off) == None:
          # there is no member at this offset
@@ -971,7 +971,7 @@ class PyMemberUsage(PyClassUsage):
       if idc.GetOpType(self.__ea, 1) in [self.OP_REG_INDEX,self.OP_REG_INDEX_DISP]:
          n = 1
 
-      idc.OpStroffEx(self.__ea, n, self.__cid, 0)
+      idc.OpStroffEx(idautils.DecodeInstruction(self.__ea), n, self.__cid, 0)
 
       return True
 
