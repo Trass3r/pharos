@@ -733,12 +733,13 @@ class PyOOAnalyzer(object):
             idc.SetMemberName(cid, off, vptr_name)
             idc.SetMemberType(cid, off, FF_DWRD, 0xFFFFFFFF, 4)
 
+      idc.SetType(idc.get_member_id(cid, off), vft_name + '*')
+
       # set the vtable name on the global class list
       for c in self.__classes:
          if c.ida_name == cls.ida_name:
             c.vftables[off].vtable_name = vft_name
             break
-
       return
 
    def __apply_parent(self, cid, parent, off):
