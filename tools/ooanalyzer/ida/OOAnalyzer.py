@@ -1187,6 +1187,8 @@ class PyOOAnalyzer(object):
                 idc.set_member_type(
                     cls.id, off, ida_bytes.FF_DWORD, 0xFFFFFFFF, 4)
 
+        idc.SetType(idc.get_member_id(cls.id, off), vft_name + '*')
+
         # set the vtable name on the global class list
         for c in self.__classes:
             if c.ida_name == cls.ida_name:
