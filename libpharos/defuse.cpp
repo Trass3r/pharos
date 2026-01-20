@@ -23,7 +23,7 @@ namespace pharos {
 // In practice five iterations was all that was needed for the worst of the functions that
 // actually produced results (ever) in the Objdigger test suite.  This limit might become
 // optional if we can find and fix the remaining convergence bugs.
-#define MAX_LOOP 5
+#define MAX_LOOP 50
 
 // Enable convergence algorithm debugging, but not full state debugging.
 // #define CONVERGE_DEBUG
