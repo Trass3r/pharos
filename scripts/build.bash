@@ -15,11 +15,10 @@ sudo ldconfig
 test -d build && rm -rf build
 mkdir build
 cd build
-x86-64-v3
 arch=$(uname -i)
 if [[ $arch == x86_64* ]]; then
-    export CXXFLAGS='-O3 -flto -march=haswell'
-    export LDFLAGS='-O3 -flto -march=haswell'
+    export CXXFLAGS='-O3 -flto -march=skylake'
+    export LDFLAGS='-O3 -flto -march=skylake'
 elif  [[ $arch == arm* ]]; then
     export CXXFLAGS='-O3 -flto'
     export LDFLAGS='-O3 -flto'
