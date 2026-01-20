@@ -45,7 +45,8 @@ jobs:
           ${{ env.REGISTRY }}/${{ github.repository }}
         flavor: |
           suffix=-${{ matrix.arch }},onlatest=true
-          
+
+    - uses: Trass3r/setup-cpp@master
     - name: Build and push Docker image
       id: build-and-push
       uses: docker/build-push-action@v5
