@@ -1664,24 +1664,22 @@ IR inline_cg (const CG& cg, const CGVertex entryv, const IR& ir, SeenFuncs  seen
         std::tie (cgobegin, cgoend) = boost::edge_range (entryv,
                                                          targetv,
                                                          cgg);
-        auto the_edge = std::find_if (cgobegin, cgoend,
-                                      [&](CGEdge ed) {
-                                        auto cd = cd_map[ed];
-
-                                        // GCC reports that *last_addr may be used uninitialized, but in
-                                        // fact this is not true because of fairly complex logic involving
-                                        // how last_addr is set at the beginning of this loop.
+        // GCC reports that *last_addr may be used uninitialized inside the find_if
+        // predicate, but this is not true because of how last_addr is set above.
 #if (defined(__GNUC__) && !defined(__clang__))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
+        auto the_edge = std::find_if (cgobegin, cgoend,
+                                      [&](CGEdge ed) {
+                                        auto cd = cd_map[ed];
                                         if (cd->get_address () == *last_addr)
                                           return true;
                                         else return false;
+                                      });
 #if (defined(__GNUC__) && !defined(__clang__))
 #pragma GCC diagnostic pop
 #endif
-                                      });
 
         // If we didn't find the edge, or if inlining the edge would create a cycle in the
         // callgraph, don't do the inlining.

@@ -132,7 +132,15 @@ ConfigNode::update_map(
   }
   Node n = const_node(filemap_)[item];
   if (!n) {
-    filemap_[item] = src;
+    // Use force_insert rather than filemap_[item] = src.  yaml-cpp 0.9+
+    // (shipped with ROSE 2.x) added value-equality uniqueness checks in
+    // insert_map_pair.  filemap_ is keyed by node identity, so the guard
+    // above uses an identity lookup.  However, multiple distinct scalar
+    // nodes can share the same value (e.g. two keys both set to "0.0" or
+    // "3000"), causing the value-equality check in the non-const operator[]
+    // to throw NonUniqueMapKey.  force_insert bypasses that check while
+    // preserving the original insert-by-identity semantics.
+    filemap_.force_insert(item, src);
   }
 }
 
