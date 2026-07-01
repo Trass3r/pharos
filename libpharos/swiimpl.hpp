@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -220,6 +221,33 @@ struct Convert<pl_int> {
       throw TypeMismatch(pt, "integer");
     }
     wrap_error(PL_get_int64(pt, &arg));
+  }
+};
+
+// SWI-Prolog installations built without GMP cannot represent integers above
+// INT64_MAX: PL_put_uint64() raises representation_error(uint64_t).  Preserve
+// the full 64-bit pattern using the signed representation used historically by
+// Pharos instead.  Conversion back to uint64_t is well-defined modulo 2^64.
+template <>
+struct Convert<std::uint64_t> {
+  static void c2p(std::uint64_t arg, pl_term pt) {
+    constexpr std::uint64_t high_bit = std::uint64_t{1} << 63;
+    pl_int value;
+    if (arg < high_bit) {
+      value = static_cast<pl_int>(arg);
+    } else {
+      value = std::numeric_limits<pl_int>::min()
+        + static_cast<pl_int>(arg - high_bit);
+    }
+    wrap_error(PL_put_int64(pt, value));
+  }
+  static void p2c(std::uint64_t & arg, pl_term pt) {
+    if (!PL_is_integer(pt)) {
+      throw TypeMismatch(pt, "integer");
+    }
+    pl_int value;
+    wrap_error(PL_get_int64(pt, &value));
+    arg = static_cast<std::uint64_t>(value);
   }
 };
 
