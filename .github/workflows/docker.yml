@@ -8,8 +8,6 @@ on:
   # Enabling this has some security implications.  For now we'll leave it off.
   #pull_request_target:
   #  types: [labeled]
-  schedule:
-    - cron: '42 06 * * sat' # Run every Saturday at 06:42 UTC
 env:
   GHCR_REGISTRY: ghcr.io
 permissions:
@@ -76,9 +74,9 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/${{ matrix.arch }}
         # Weekly builds start cold, then refresh the architecture-specific cache.
-        cache-from: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ github.repository }}:buildcache-${{ matrix.arch }}
-        cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0}/{1}:buildcache-{2},mode=max', env.GHCR_REGISTRY, github.repository, matrix.arch) || '' }}
-        no-cache: ${{ github.event_name == 'schedule' }}
+        #cache-from: type=registry,ref=${{ env.GHCR_REGISTRY }}/${{ github.repository }}:buildcache-${{ matrix.arch }}
+        #cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0}/{1}:buildcache-{2},mode=max', env.GHCR_REGISTRY, github.repository, matrix.arch) || '' }}
+        #no-cache: ${{ github.event_name == 'schedule' }}
 
     - name: Log Docker image digest
       if: steps.build-and-push.outputs.pushed
