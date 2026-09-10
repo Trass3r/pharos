@@ -385,11 +385,18 @@ void FunctionDescriptor::update_target_address() {
   // Now that we've found the entry point block we can get on with deciding whether we're a
   // thunk or not.  Begin by obtaining the statement (instruction) list.
   SgAsmStatementPtrList& insns = bblock->get_statementList();
-  // We're a thunk only if there's a single instruction in the block.
-  if (insns.size() != 1) return;
+  // We're a thunk only if the block contains a jump, optionally preceded by the ENDBR landing
+  // instruction required by Intel CET.  In particular, do not accept an arbitrary NOP here.
+  size_t jump_index = 0;
+  if (insns.size() == 2 && insn_is_endbr(isSgAsmX86Instruction(insns[0]))) {
+    jump_index = 1;
+  }
+  else if (insns.size() != 1) {
+    return;
+  }
 
   // Get that instruction, and presume that it's an x86 instruction. :-(
-  SgAsmX86Instruction* insn = isSgAsmX86Instruction(insns[0]);
+  SgAsmX86Instruction* insn = isSgAsmX86Instruction(insns[jump_index]);
   // There must be an instruction, and it must be a jump.
   if (insn == NULL) return;
   if (insn->get_kind() != x86_jmp && insn->get_kind() != x86_farjmp) return;
@@ -1377,8 +1384,19 @@ std::vector<CFGVertex> FunctionDescriptor::get_vertices_in_flow_order(const CFG&
 
 // Return the list of blocks with no successors connected to the entry point in the Pharos CFG.
 // Since there's only a single entry vertex (vertex 0), it doesn't need to be passed.
-std::vector<CFGVertex> FunctionDescriptor::get_return_vertices() const {
-  return get_return_vertices(get_pharos_cfg(), entry_vertex);
+std::vector<CFGVertex>
+FunctionDescriptor::get_return_vertices(ReturnVertices which) const {
+  const CFG &cfg = get_pharos_cfg();
+  CFGVertexVector vertices = get_return_vertices(cfg, entry_vertex);
+  if (which == ReturnVertices::All) return vertices;
+
+  vertices.erase(std::remove_if(vertices.begin(), vertices.end(), [&](CFGVertex vertex) {
+    const SgAsmBlock *block = convert_vertex_to_bblock(cfg, vertex);
+    const SgAsmInstruction *last = block ? last_insn_in_block(block) : nullptr;
+    const CallDescriptor *call = last ? ds.get_call(last->get_address()) : nullptr;
+    return call != nullptr && call->get_never_returns();
+  }), vertices.end());
+  return vertices;
 }
 
 // Return the list of blocks with no successors from the provided CFG and entry point.
@@ -1387,11 +1405,11 @@ std::vector<CFGVertex> FunctionDescriptor::get_return_vertices(const CFG& cfg, C
   return analyzer.return_blocks(cfg, entry);
 }
 
-// Deprecated in favor of get_return_vertices(), provides backward compatability with apigraph.cpp
+// Deprecated in favor of get_return_vertices(); retained for backward compatibility.
 BlockSet FunctionDescriptor::get_return_blocks() const {
   BlockSet blocks;
   const CFG& cfg = get_pharos_cfg();
-  for (CFGVertex vertex : get_return_vertices()) {
+  for (CFGVertex vertex : get_return_vertices(ReturnVertices::All)) {
     SgAsmBlock *block = convert_vertex_to_bblock(cfg, vertex);
     if (block) blocks.insert(block);
   }
